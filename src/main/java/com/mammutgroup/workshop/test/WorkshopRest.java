@@ -1,6 +1,8 @@
 package com.mammutgroup.workshop.test;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mammutgroup.workshop.common.core.model.dto.CustomerDto;
 import com.mammutgroup.workshop.common.core.model.dto.EmployeeDto;
 import com.mammutgroup.workshop.common.core.model.dto.LineDto;
@@ -18,9 +20,18 @@ import java.util.*;
  */
 public class WorkshopRest {
 
-    public final static String baseAddress = "http://localhost:8085/core-server/cxf/rest";
+    public final  String baseAddress = "http://localhost:8085/core-server/cxf/rest";
 
-    public static Map.Entry<String, String> createAuthHeader(String username,String password)
+    public final  GsonBuilder GSON_BUILDER = new GsonBuilder();
+
+    public WorkshopRest()
+    {
+        new GraphAdapterBuilder().addType(LineDto.class).registerOn(GSON_BUILDER);
+    }
+
+
+
+    public  Map.Entry<String, String> createAuthHeader(String username,String password)
     {
 
         String usernameAndPassword = username + ":" + password;
@@ -30,7 +41,7 @@ public class WorkshopRest {
     }
 
 
-    public static Map.Entry<String, String> adminAuth() {
+    public  Map.Entry<String, String> adminAuth() {
         String username = "admin";
         String password = "123";
 
@@ -41,12 +52,12 @@ public class WorkshopRest {
     }
 
 
-    public static String getAllEntities(String path) {
+    public  String get(String path) {
         System.out.println("GET all ...");
         Client client = Client.create();
         WebResource webResource = client
-                .resource(WorkshopRest.baseAddress + path);
-        ClientResponse res = webResource.type("application/json").header(WorkshopRest.adminAuth().getKey(), WorkshopRest.adminAuth().getValue())
+                .resource(baseAddress + path);
+        ClientResponse res = webResource.type("application/json").header(adminAuth().getKey(), adminAuth().getValue())
                 .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
         System.out.println("Output from Server (status code: " + res.getStatus() + ")");
         String output = res.getEntity(String.class);
@@ -54,28 +65,28 @@ public class WorkshopRest {
         return output;
     }
 
-    public static void updateEntity(Object entity,String path)
+    public  void updateEntity(Object entity,String path)
     {
         System.out.println("Create entity ...");
         Client client = Client.create();
 
         WebResource webResource = client
-                .resource(WorkshopRest.baseAddress + path);
-        ClientResponse res = webResource.type("application/json").header(WorkshopRest.adminAuth().getKey(), WorkshopRest.adminAuth().getValue())
-                .accept(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, Util.toJson(entity));
+                .resource(baseAddress + path);
+        ClientResponse res = webResource.type("application/json").header(adminAuth().getKey(), adminAuth().getValue())
+                .accept(MediaType.APPLICATION_JSON_TYPE).put(ClientResponse.class, GSON_BUILDER.create().toJson(entity));
         System.out.println("Output from Server (status code: " + res.getStatus() + ")");
         //String output = res.getEntity(String.class);
         //System.out.println(output);
 
     }
 
-    public static String post(Object entity,String path,Map.Entry<String,String> auth)
+    public  String post(Object entity,String path,Map.Entry<String,String> auth)
     {
         Client client = Client.create();
         WebResource webResource = client
-                .resource(WorkshopRest.baseAddress + path);
+                .resource(baseAddress + path);
         ClientResponse res = webResource.type("application/json").header(auth.getKey(), auth.getValue())
-                .accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, Util.toJson(entity));
+                .accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, GSON_BUILDER.create().toJson(entity));
         System.out.println("Output from Server (status code: " + res.getStatus() + ")");
         String output = null;
         try {
@@ -89,22 +100,22 @@ public class WorkshopRest {
     }
 
 
-    public static String createEntity(Object entity, String path) {
+    public  String createEntity(Object entity, String path) {
 
         System.out.println("Create entity ...");
         Client client = Client.create();
 
         WebResource webResource = client
-                .resource(WorkshopRest.baseAddress + path);
-        ClientResponse res = webResource.type("application/json").header(WorkshopRest.adminAuth().getKey(), WorkshopRest.adminAuth().getValue())
-                .accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, Util.toJson(entity));
+                .resource(baseAddress + path);
+        ClientResponse res = webResource.type("application/json").header(adminAuth().getKey(), adminAuth().getValue())
+                .accept(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, GSON_BUILDER.create().toJson(entity));
         System.out.println("Output from Server (status code: " + res.getStatus() + ")");
         String output = res.getEntity(String.class);
         System.out.println(output);
         return output;
     }
 
-    public static CustomerDto newCustomer() {
+    public  CustomerDto newCustomer() {
         CustomerDto dto = new CustomerDto();
         Random random = new Random();
         dto.setFirstName("customer-" + random.nextInt());
@@ -117,7 +128,7 @@ public class WorkshopRest {
     }
 
 
-    public static EmployeeDto newEmployee() {
+    public  EmployeeDto newEmployee() {
         Random random = new Random();
         EmployeeDto employeeDto = new EmployeeDto();
         employeeDto.setFirstName("employee-" + random.nextInt());
@@ -129,14 +140,14 @@ public class WorkshopRest {
         return employeeDto;
     }
 
-    public static WorkshopDto newWorkshop() {
+    public  WorkshopDto newWorkshop() {
         WorkshopDto workshopDto = new WorkshopDto();
         workshopDto.setName("workshop-" + new Random().nextInt());
         workshopDto.setAddress("Iran,Tehran");
         return workshopDto;
     }
 
-    public static LineDto newLine(int lineNumber, WorkshopDto workshopDto) {
+    public  LineDto newLine(int lineNumber, WorkshopDto workshopDto) {
         LineDto lineDto = new LineDto();
         lineDto.setLineNumber(lineNumber);
         lineDto.setWorkshop(workshopDto);
